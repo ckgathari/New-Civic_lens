@@ -1,0 +1,11 @@
+.mvn
+target
+.git
+.gitignore
+README.md
+.DS_Store
+*.log
+.idea
+*.swp
+*.swo
+node_modules
