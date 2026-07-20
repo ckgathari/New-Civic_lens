@@ -1,37 +1,29 @@
-# Stage 1: Build
-FROM node:20-alpine as builder
+# ---- Build Stage ----
+FROM node:20-alpine AS builder
 
 WORKDIR /build
 
-# Copy package files
+# Cache npm dependencies
 COPY package.json package-lock.json ./
-
-# Install dependencies
 RUN npm ci
 
-# Copy source code
+# Copy source and build
 COPY . .
-
-# Build the application
 RUN npm run build
 
-# Stage 2: Runtime
-FROM node:20-alpine
+# ---- Runtime Stage ----
+FROM nginx:1.25-alpine
 
-WORKDIR /app
+# Copy built SPA assets
+COPY --from=builder /build/dist /usr/share/nginx/html
 
-# Install serve to run the SPA
-RUN npm install -g serve
+# Copy nginx config template — Render injects $PORT at runtime
+# The official nginx image processes /etc/nginx/templates/*.template via envsubst
+COPY nginx.conf.template /etc/nginx/templates/default.conf.template
 
-# Copy built application from builder stage
-COPY --from=builder /build/dist dist
+# Render assigns a dynamic $PORT; default to 80 locally
+ENV PORT=80
+EXPOSE 80
 
-# Expose port
-EXPOSE 3000
-
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
-  CMD wget --quiet --tries=1 --spider http://localhost:3000 || exit 1
-
-# Run the application
-CMD ["serve", "-s", "dist", "-l", "3000"]
+# nginx entrypoint processes the template then starts nginx
+CMD ["/docker-entrypoint.sh", "nginx", "-g", "daemon off;"]

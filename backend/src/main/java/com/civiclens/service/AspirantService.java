@@ -11,7 +11,6 @@ import com.civiclens.repository.CountyRepository;
 import com.civiclens.repository.ConstituencyRepository;
 import com.civiclens.repository.WardRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -19,6 +18,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
+@SuppressWarnings("null")
 public class AspirantService {
 
     @Autowired
@@ -33,7 +33,7 @@ public class AspirantService {
     @Autowired
     private WardRepository wardRepository;
 
-    public AspirantDto createAspirant(@NonNull AspirantCreateDto createDto) {
+    public AspirantDto createAspirant(AspirantCreateDto createDto) {
         if (createDto.getCountyId() == null) {
             throw new IllegalArgumentException("County is required");
         }
@@ -87,13 +87,13 @@ public class AspirantService {
             .collect(Collectors.toList());
     }
 
-    public AspirantDto getAspirantById(@NonNull String id) {
+    public AspirantDto getAspirantById(String id) {
         Aspirant aspirant = aspirantRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Aspirant not found"));
         return convertToDto(Objects.requireNonNull(aspirant, "Aspirant must not be null"));
     }
 
-    public AspirantDto updateAspirant(@NonNull String id, @NonNull AspirantCreateDto updateDto) {
+    public AspirantDto updateAspirant(String id, AspirantCreateDto updateDto) {
         if (updateDto.getCountyId() == null) {
             throw new IllegalArgumentException("County is required");
         }
@@ -143,20 +143,20 @@ public class AspirantService {
         return convertToDto(updated);
     }
 
-    public void deleteAspirant(@NonNull String id) {
+    public void deleteAspirant(String id) {
         if (!aspirantRepository.existsById(id)) {
             throw new RuntimeException("Aspirant not found");
         }
         aspirantRepository.deleteById(id);
     }
 
-    public List<Aspirant> getAspirantsByPositionAndLocation(@NonNull String position, @NonNull Integer countyId,
+    public List<Aspirant> getAspirantsByPositionAndLocation(String position, Integer countyId,
                                                           Integer constituencyId, Integer wardId) {
         return aspirantRepository.findByPositionAndCountyIdAndConstituencyIdAndWardId(
             position, countyId, constituencyId, wardId);
     }
 
-    private AspirantDto convertToDto(@NonNull Aspirant aspirant) {
+    private AspirantDto convertToDto(Aspirant aspirant) {
         return new AspirantDto(
             aspirant.getId(),
             aspirant.getName(),
