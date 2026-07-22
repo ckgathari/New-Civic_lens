@@ -1,52 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { authAPI } from '../api/apiClient';
-
-const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+import { authAPI, profileAPI } from '../api/apiClient';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const [googleLoading, setGoogleLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const navigate = useNavigate();
-
-  useEffect(() => {
-    if (!GOOGLE_CLIENT_ID) return;
-    const script = document.createElement('script');
-    script.src = 'https://accounts.google.com/gsi/client';
-    script.async = true;
-    script.defer = true;
-    script.onload = () => {
-      window.google.accounts.id.initialize({
-        client_id: GOOGLE_CLIENT_ID,
-        callback: handleGoogleResponse,
-      });
-      window.google.accounts.id.renderButton(
-        document.getElementById('google-signin-btn'),
-        { theme: 'outline', size: 'large', width: '100%', text: 'signin_with' }
-      );
-    };
-    document.body.appendChild(script);
-    return () => document.body.removeChild(script);
-  }, []);
-
-  const handleGoogleResponse = async (response) => {
-    setGoogleLoading(true);
-    setErrorMsg('');
-    try {
-      const res = await authAPI.googleAuth(response.credential);
-      const authData = res.data;
-      if (!authData?.token) throw new Error('Invalid response');
-      localStorage.setItem('authToken', authData.token);
-      navigate('/dashboard');
-    } catch (err) {
-      setErrorMsg(err.response?.data?.error || 'Google sign-in failed');
-    } finally {
-      setGoogleLoading(false);
-    }
-  };
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -132,15 +93,6 @@ const Login = () => {
           Don't have an account?{' '}
           <Link to="/signup" style={styles.link}>Sign up</Link>
         </p>
-
-        {/* Google Sign-In */}
-        {GOOGLE_CLIENT_ID && (
-          <>
-            <p style={styles.orDivider}>— or —</p>
-            <div id="google-signin-btn" style={{ width: '100%' }} />
-            {googleLoading && <p style={{ fontSize: '13px', color: '#555', marginTop: '8px' }}>Signing in with Google...</p>}
-          </>
-        )}
       </div>
     </div>
   );

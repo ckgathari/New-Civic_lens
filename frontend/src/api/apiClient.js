@@ -45,8 +45,6 @@ export const authAPI = {
     }),
   login: (email, password) =>
     apiClient.post('/auth/login', { email, password }),
-  googleAuth: (idToken) =>
-    apiClient.post('/auth/google', { idToken }),
   logout: () => apiClient.post('/auth/logout'),
   forgotPassword: (email) =>
     apiClient.post('/auth/forgot-password', { email }),
