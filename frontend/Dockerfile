@@ -10,9 +10,10 @@ RUN npm ci
 # Copy source
 COPY . .
 
-# Accept backend URL at build time so Vite bakes it into the bundle
-ARG VITE_API_URL
-ENV VITE_API_URL=$VITE_API_URL
+# Bake the backend API URL into the bundle at build time.
+# Override via --build-arg VITE_API_URL=... if needed.
+ARG VITE_API_URL=https://civiclens-backend-aynk.onrender.com/api
+ENV VITE_API_URL=${VITE_API_URL}
 
 RUN npm run build
 
