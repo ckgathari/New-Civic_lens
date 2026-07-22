@@ -20,7 +20,7 @@ services:
       - key: JWT_EXPIRATION
         value: 86400000
       - key: CORS_ALLOWED_ORIGINS
-        value: https://civiclens-frontend-tzml.onrender.com/      
+        value: https://civiclens-frontend-tzml.onrender.com
       - key: SPRING_JPA_HIBERNATE_DDL_AUTO
         value: validate
       - key: SPRING_PROFILES_ACTIVE
@@ -33,9 +33,6 @@ services:
     rootDir: frontend
     dockerfilePath: ./Dockerfile
     plan: free
-    dockerBuildArgs:
-      - key: VITE_API_URL
-        value: https://civiclens-backend-aynk.onrender.com
     envVars:
       - key: PORT
         value: 80
