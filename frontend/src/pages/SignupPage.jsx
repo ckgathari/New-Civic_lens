@@ -1,8 +1,10 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import LocationSelector from '../components/LocationSelector';
 import { authAPI } from '../api/apiClient';
+
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
 const SignUp = () => {
   const [step, setStep] = useState(1);
@@ -16,8 +18,45 @@ const SignUp = () => {
     wardId: ''
   });
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
   const [message, setMessage] = useState('');
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!GOOGLE_CLIENT_ID) return;
+    const script = document.createElement('script');
+    script.src = 'https://accounts.google.com/gsi/client';
+    script.async = true;
+    script.defer = true;
+    script.onload = () => {
+      window.google.accounts.id.initialize({
+        client_id: GOOGLE_CLIENT_ID,
+        callback: handleGoogleResponse,
+      });
+      window.google.accounts.id.renderButton(
+        document.getElementById('google-signup-btn'),
+        { theme: 'outline', size: 'large', width: '100%', text: 'signup_with' }
+      );
+    };
+    document.body.appendChild(script);
+    return () => document.body.removeChild(script);
+  }, []);
+
+  const handleGoogleResponse = async (response) => {
+    setGoogleLoading(true);
+    setMessage('');
+    try {
+      const res = await authAPI.googleAuth(response.credential);
+      const authData = res.data;
+      if (!authData?.token) throw new Error('Invalid response');
+      localStorage.setItem('authToken', authData.token);
+      navigate('/dashboard');
+    } catch (err) {
+      setMessage(err.response?.data?.error || 'Google sign-up failed');
+    } finally {
+      setGoogleLoading(false);
+    }
+  };
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -159,6 +198,14 @@ const SignUp = () => {
           <button type="submit" style={styles.button}>
             Next
           </button>
+
+          {GOOGLE_CLIENT_ID && (
+            <>
+              <p style={{ textAlign: 'center', margin: '15px 0 8px', fontSize: '13px', color: '#999' }}>— or —</p>
+              <div id="google-signup-btn" style={{ width: '100%' }} />
+              {googleLoading && <p style={{ textAlign: 'center', fontSize: '13px', color: '#555', marginTop: '8px' }}>Signing up with Google...</p>}
+            </>
+          )}
         </form>
       ) : (
         <div style={styles.form}>

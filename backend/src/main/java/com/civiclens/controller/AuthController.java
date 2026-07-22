@@ -7,7 +7,12 @@ import com.civiclens.dto.UserDto;
 import com.civiclens.entity.User;
 import com.civiclens.repository.UserRepository;
 import com.civiclens.security.JwtTokenProvider;
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
+import com.google.api.client.http.javanet.NetHttpTransport;
+import com.google.api.client.json.gson.GsonFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.slf4j.Logger;
@@ -17,8 +22,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -43,6 +50,9 @@ public class AuthController {
     private com.civiclens.repository.ConstituencyRepository constituencyRepository;
     @Autowired
     private com.civiclens.repository.WardRepository wardRepository;
+
+    @Value("${google.client-id}")
+    private String googleClientId;
 
 
     @PostMapping("/signup")
@@ -279,6 +289,84 @@ public class AuthController {
             logger.error("Token check failed", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("valid", false, "message", "Token validation failed"));
+        }
+    }
+
+    @PostMapping("/google")
+    public ResponseEntity<?> googleAuth(@RequestBody Map<String, String> body) {
+        String idTokenString = body.get("idToken");
+        if (idTokenString == null || idTokenString.isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Missing idToken"));
+        }
+        try {
+            GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(
+                    new NetHttpTransport(), GsonFactory.getDefaultInstance())
+                    .setAudience(Collections.singletonList(googleClientId))
+                    .build();
+
+            GoogleIdToken idToken = verifier.verify(idTokenString);
+            if (idToken == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(Map.of("error", "Invalid Google token"));
+            }
+
+            GoogleIdToken.Payload payload = idToken.getPayload();
+            String email = payload.getEmail();
+            String firstName = (String) payload.get("given_name");
+            String lastName = (String) payload.get("family_name");
+            String pictureUrl = (String) payload.get("picture");
+
+            // Find or create user
+            Optional<User> existingUser = userRepository.findByEmail(email);
+            User user;
+            if (existingUser.isPresent()) {
+                user = existingUser.get();
+                // Update picture if changed
+                if (pictureUrl != null && !pictureUrl.equals(user.getPhotoUrl())) {
+                    user.setPhotoUrl(pictureUrl);
+                    user = userRepository.save(user);
+                }
+            } else {
+                // Create new user — location will be set after first login via CompleteProfile
+                user = User.builder()
+                        .email(email)
+                        .password(passwordEncoder.encode(UUID.randomUUID().toString()))
+                        .firstName(firstName)
+                        .lastName(lastName)
+                        .photoUrl(pictureUrl)
+                        .isLeader(false)
+                        .isAspirant(false)
+                        .isAdmin(false)
+                        .createdAt(LocalDateTime.now())
+                        .updatedAt(LocalDateTime.now())
+                        .build();
+                user = userRepository.save(user);
+            }
+
+            String token = jwtTokenProvider.generateToken(user.getId(), user.getEmail());
+
+            UserDto userDto = UserDto.builder()
+                    .id(user.getId())
+                    .email(user.getEmail())
+                    .firstName(user.getFirstName())
+                    .lastName(user.getLastName())
+                    .countyId(user.getCounty() != null ? user.getCounty().getId() : null)
+                    .constituencyId(user.getConstituency() != null ? user.getConstituency().getId() : null)
+                    .wardId(user.getWard() != null ? user.getWard().getId() : null)
+                    .countyName(user.getCounty() != null ? user.getCounty().getName() : null)
+                    .constituencyName(user.getConstituency() != null ? user.getConstituency().getName() : null)
+                    .wardName(user.getWard() != null ? user.getWard().getName() : null)
+                    .build();
+
+            return ResponseEntity.ok(AuthResponse.builder().token(token).user(userDto).build());
+        } catch (DataAccessException e) {
+            logger.error("Database error during Google auth for email", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Authentication failed"));
+        } catch (Exception e) {
+            logger.error("Google auth failed", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Authentication failed"));
         }
     }
 }
