@@ -33,7 +33,7 @@ services:
     rootDir: frontend
     dockerfilePath: ./Dockerfile
     plan: free
-    buildArgs:
+    dockerBuildArgs:
       - key: VITE_API_URL
         value: https://civiclens-backend.onrender.com/api
     envVars:
