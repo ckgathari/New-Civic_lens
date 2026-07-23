@@ -10,11 +10,8 @@ import com.civiclens.entity.PollVote;
 import com.civiclens.entity.User;
 import com.civiclens.entity.Ward;
 import com.civiclens.repository.AspirantRepository;
-import com.civiclens.repository.ConstituencyRepository;
-import com.civiclens.repository.CountyRepository;
 import com.civiclens.repository.LeaderRepository;
 import com.civiclens.repository.PollVoteRepository;
-import com.civiclens.repository.WardRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
@@ -40,13 +37,7 @@ public class PollService {
     private AspirantRepository aspirantRepository;
 
     @Autowired
-    private CountyRepository countyRepository;
-
-    @Autowired
-    private ConstituencyRepository constituencyRepository;
-
-    @Autowired
-    private WardRepository wardRepository;
+    private LocationCacheService locationCache;
 
     @Transactional
     public PollVoteDto castVote(User voter, @NonNull String candidateId, @NonNull String candidateType, String position,
@@ -70,15 +61,14 @@ public class PollService {
             throw new RuntimeException("Invalid candidate type");
         }
 
-        County county = countyRepository.findById(countyId)
-            .orElseThrow(() -> new RuntimeException("County not found"));
+        County county = locationCache.getCounty(countyId);
 
         Constituency constituency = scopedConstituencyId != null
-            ? constituencyRepository.findById(scopedConstituencyId).orElse(null)
+            ? locationCache.getConstituency(scopedConstituencyId).orElse(null)
             : null;
 
         Ward ward = scopedWardId != null
-            ? wardRepository.findById(scopedWardId).orElse(null)
+            ? locationCache.getWard(scopedWardId).orElse(null)
             : null;
 
         boolean hasVoted = pollVoteRepository.existsByVoterAndPositionAndCountyAndConstituencyAndWard(
@@ -107,15 +97,14 @@ public class PollService {
         Integer scopedConstituencyId = scopedConstituencyId(position, constituencyId);
         Integer scopedWardId = scopedWardId(position, wardId);
 
-        County county = countyRepository.findById(countyId)
-            .orElseThrow(() -> new RuntimeException("County not found"));
+        County county = locationCache.getCounty(countyId);
 
         Constituency constituency = scopedConstituencyId != null
-            ? constituencyRepository.findById(scopedConstituencyId).orElse(null)
+            ? locationCache.getConstituency(scopedConstituencyId).orElse(null)
             : null;
 
         Ward ward = scopedWardId != null
-            ? wardRepository.findById(scopedWardId).orElse(null)
+            ? locationCache.getWard(scopedWardId).orElse(null)
             : null;
 
         List<Object> candidates = getCandidatesForPosition(position, countyId, scopedConstituencyId, scopedWardId);
@@ -182,15 +171,14 @@ public class PollService {
         Integer scopedConstituencyId = scopedConstituencyId(position, constituencyId);
         Integer scopedWardId = scopedWardId(position, wardId);
 
-        County county = countyRepository.findById(countyId)
-            .orElseThrow(() -> new RuntimeException("County not found"));
+        County county = locationCache.getCounty(countyId);
 
         Constituency constituency = scopedConstituencyId != null
-            ? constituencyRepository.findById(scopedConstituencyId).orElse(null)
+            ? locationCache.getConstituency(scopedConstituencyId).orElse(null)
             : null;
 
         Ward ward = scopedWardId != null
-            ? wardRepository.findById(scopedWardId).orElse(null)
+            ? locationCache.getWard(scopedWardId).orElse(null)
             : null;
 
         return pollVoteRepository.findByVoterAndPositionAndCountyAndConstituencyAndWard(
@@ -202,15 +190,14 @@ public class PollService {
         Integer scopedConstituencyId = scopedConstituencyId(position, constituencyId);
         Integer scopedWardId = scopedWardId(position, wardId);
 
-        County county = countyRepository.findById(countyId)
-            .orElseThrow(() -> new RuntimeException("County not found"));
+        County county = locationCache.getCounty(countyId);
 
         Constituency constituency = scopedConstituencyId != null
-            ? constituencyRepository.findById(scopedConstituencyId).orElse(null)
+            ? locationCache.getConstituency(scopedConstituencyId).orElse(null)
             : null;
 
         Ward ward = scopedWardId != null
-            ? wardRepository.findById(scopedWardId).orElse(null)
+            ? locationCache.getWard(scopedWardId).orElse(null)
             : null;
 
         return pollVoteRepository.existsByVoterAndPositionAndCountyAndConstituencyAndWard(

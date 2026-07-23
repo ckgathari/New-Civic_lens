@@ -7,6 +7,7 @@ import com.civiclens.repository.CountyRepository;
 import com.civiclens.repository.ConstituencyRepository;
 import com.civiclens.repository.WardRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,17 +24,20 @@ public class LocationsController {
     private WardRepository wardRepository;
 
     @GetMapping("/counties")
+    @Cacheable("counties")
     public ResponseEntity<List<County>> getCounties() {
         return ResponseEntity.ok(countyRepository.findAll());
     }
 
     @GetMapping("/constituencies/{countyId}")
+    @Cacheable(value = "constituencies", key = "#countyId")
     public ResponseEntity<List<Constituency>> getConstituencies(@PathVariable Integer countyId) {
         java.util.Objects.requireNonNull(countyId, "countyId must not be null");
         return ResponseEntity.ok(constituencyRepository.findByCounty_Id(countyId));
     }
 
     @GetMapping("/wards/{constituencyId}")
+    @Cacheable(value = "wards", key = "#constituencyId")
     public ResponseEntity<List<Ward>> getWards(@PathVariable Integer constituencyId) {
         java.util.Objects.requireNonNull(constituencyId, "constituencyId must not be null");
         return ResponseEntity.ok(wardRepository.findByConstituency_Id(constituencyId));

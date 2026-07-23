@@ -7,9 +7,6 @@ import com.civiclens.entity.County;
 import com.civiclens.entity.Constituency;
 import com.civiclens.entity.Ward;
 import com.civiclens.repository.AspirantRepository;
-import com.civiclens.repository.CountyRepository;
-import com.civiclens.repository.ConstituencyRepository;
-import com.civiclens.repository.WardRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -25,13 +22,7 @@ public class AspirantService {
     private AspirantRepository aspirantRepository;
 
     @Autowired
-    private CountyRepository countyRepository;
-
-    @Autowired
-    private ConstituencyRepository constituencyRepository;
-
-    @Autowired
-    private WardRepository wardRepository;
+    private LocationCacheService locationCache;
 
     public AspirantDto createAspirant(AspirantCreateDto createDto) {
         if (createDto.getCountyId() == null) {
@@ -45,20 +36,19 @@ public class AspirantService {
 
         // Validate location entities
         Integer countyId = Objects.requireNonNull(createDto.getCountyId(), "County is required");
-        County county = countyRepository.findById(countyId)
-            .orElseThrow(() -> new RuntimeException("County not found"));
+        County county = locationCache.getCounty(countyId);
 
         Constituency constituency = null;
         if (createDto.getConstituencyId() != null) {
             Integer constituencyId = Objects.requireNonNull(createDto.getConstituencyId(), "Constituency is required");
-            constituency = constituencyRepository.findById(constituencyId)
+            constituency = locationCache.getConstituency(constituencyId)
                 .orElseThrow(() -> new RuntimeException("Constituency not found"));
         }
 
         Ward ward = null;
         if (createDto.getWardId() != null) {
             Integer wardId = Objects.requireNonNull(createDto.getWardId(), "Ward is required");
-            ward = wardRepository.findById(wardId)
+            ward = locationCache.getWard(wardId)
                 .orElseThrow(() -> new RuntimeException("Ward not found"));
         }
 
@@ -109,20 +99,19 @@ public class AspirantService {
 
         // Validate location entities
         Integer countyId = Objects.requireNonNull(updateDto.getCountyId(), "County is required");
-        County county = countyRepository.findById(countyId)
-            .orElseThrow(() -> new RuntimeException("County not found"));
+        County county = locationCache.getCounty(countyId);
 
         Constituency constituency = null;
         if (updateDto.getConstituencyId() != null) {
             Integer constituencyId = Objects.requireNonNull(updateDto.getConstituencyId(), "Constituency is required");
-            constituency = constituencyRepository.findById(constituencyId)
+            constituency = locationCache.getConstituency(constituencyId)
                 .orElseThrow(() -> new RuntimeException("Constituency not found"));
         }
 
         Ward ward = null;
         if (updateDto.getWardId() != null) {
             Integer wardId = Objects.requireNonNull(updateDto.getWardId(), "Ward is required");
-            ward = wardRepository.findById(wardId)
+            ward = locationCache.getWard(wardId)
                 .orElseThrow(() -> new RuntimeException("Ward not found"));
         }
 

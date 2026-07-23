@@ -38,11 +38,7 @@ public class AuthController {
     private JwtTokenProvider jwtTokenProvider;
 
     @Autowired
-    private com.civiclens.repository.CountyRepository countyRepository;
-    @Autowired
-    private com.civiclens.repository.ConstituencyRepository constituencyRepository;
-    @Autowired
-    private com.civiclens.repository.WardRepository wardRepository;
+    private com.civiclens.service.LocationCacheService locationCache;
 
 
     @PostMapping("/signup")
@@ -67,11 +63,10 @@ public class AuthController {
                     .password(passwordEncoder.encode(request.getPassword()))
                     .firstName(request.getFirstName())
                     .lastName(request.getLastName())
-                    .county(countyRepository.findById(request.getCountyId())
-                            .orElseThrow(() -> new IllegalArgumentException("Invalid countyId: " + request.getCountyId())))
-                    .constituency(constituencyRepository.findById(request.getConstituencyId())
+                    .county(locationCache.getCounty(request.getCountyId()))
+                    .constituency(locationCache.getConstituency(request.getConstituencyId())
                             .orElseThrow(() -> new IllegalArgumentException("Invalid constituencyId: " + request.getConstituencyId())))
-                    .ward(wardRepository.findById(request.getWardId())
+                    .ward(locationCache.getWard(request.getWardId())
                             .orElseThrow(() -> new IllegalArgumentException("Invalid wardId: " + request.getWardId())))
                     .isLeader(false)
                     .isAspirant(false)
