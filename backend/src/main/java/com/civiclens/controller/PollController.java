@@ -207,4 +207,37 @@ public class PollController {
 
         return ResponseEntity.ok(candidateDtos);
     }
+
+    /**
+     * Single endpoint that returns candidates + results + userVote for all 6 positions.
+     * Replaces 18 individual requests from the dashboard (6 positions × 3 endpoints).
+     */
+    @GetMapping("/dashboard")
+    public ResponseEntity<?> getDashboard(
+            @RequestParam Integer countyId,
+            @RequestParam(required = false) Integer constituencyId,
+            @RequestParam(required = false) Integer wardId,
+            Authentication authentication) {
+        try {
+            User user = null;
+            if (authentication != null && authentication.isAuthenticated()
+                    && !(authentication instanceof org.springframework.security.authentication.AnonymousAuthenticationToken)) {
+                String email = authentication.getName();
+                user = userRepository.findByEmail(email).orElse(null);
+            }
+
+            java.util.Map<String, java.util.Map<String, Object>> data =
+                pollService.getDashboardData(user, countyId, constituencyId, wardId);
+
+            return ResponseEntity.ok(data);
+        } catch (DataAccessException e) {
+            logger.error("Database error loading dashboard poll data", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("error", "Failed to load dashboard data"));
+        } catch (Exception e) {
+            logger.error("Failed to load dashboard poll data", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("error", "Failed to load dashboard data"));
+        }
+    }
 }

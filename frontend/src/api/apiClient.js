@@ -119,6 +119,9 @@ export const pollsAPI = {
     apiClient.get('/polls/user-vote', { params: { position, countyId, constituencyId, wardId } }),
   getCandidates: (position, countyId, constituencyId, wardId) =>
     apiClient.get('/polls/candidates', { params: { position, countyId, constituencyId, wardId } }),
+  // Single endpoint: returns candidates + results + userVote for all 6 positions
+  getDashboard: (countyId, constituencyId, wardId) =>
+    apiClient.get('/polls/dashboard', { params: { countyId, constituencyId, wardId } }),
 };
 
 // Admin endpoints

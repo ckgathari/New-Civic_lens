@@ -228,6 +228,64 @@ public class PollService {
         return candidates;
     }
 
+    /**
+     * Returns candidates + results + user vote for all positions in one call.
+     * Replaces 18 individual requests (6 positions × 3 endpoints) on the dashboard.
+     */
+    public Map<String, Map<String, Object>> getDashboardData(
+            User user, Integer countyId, Integer constituencyId, Integer wardId) {
+
+        List<String> positions = List.of("President", "Governor", "Senator", "Women Rep", "MP", "MCA");
+        Map<String, Map<String, Object>> result = new java.util.LinkedHashMap<>();
+
+        for (String position : positions) {
+            List<PollResultDto> pollResults = getPollResults(position, countyId, constituencyId, wardId);
+
+            // Build candidate list from poll results (already contains all candidate info)
+            List<Map<String, Object>> candidates = pollResults.stream()
+                .map(r -> {
+                    Map<String, Object> c = new java.util.HashMap<>();
+                    c.put("id", r.getCandidateId());
+                    c.put("name", r.getCandidateName());
+                    c.put("party", r.getParty());
+                    c.put("isAspirant", r.isAspirant());
+                    c.put("type", r.isAspirant() ? "ASPIRANT" : "LEADER");
+                    return c;
+                })
+                .collect(Collectors.toList());
+
+            // User vote for this position
+            Optional<PollVote> userVoteOpt = user != null
+                ? getUserVote(user, position, countyId, constituencyId, wardId)
+                : Optional.empty();
+
+            Map<String, Object> userVoteData = new java.util.HashMap<>();
+            if (userVoteOpt.isPresent()) {
+                PollVote pv = userVoteOpt.get();
+                String candidateId = pv.getCandidateType() == PollVote.CandidateType.LEADER
+                    ? pv.getLeaderCandidate().getId()
+                    : pv.getAspirantCandidate().getId();
+                String candidateName = pv.getCandidateType() == PollVote.CandidateType.LEADER
+                    ? pv.getLeaderCandidate().getName()
+                    : pv.getAspirantCandidate().getName();
+                userVoteData.put("hasVoted", true);
+                userVoteData.put("candidateId", candidateId);
+                userVoteData.put("candidateName", candidateName);
+                userVoteData.put("candidateType", pv.getCandidateType().name());
+            } else {
+                userVoteData.put("hasVoted", false);
+            }
+
+            Map<String, Object> positionData = new java.util.HashMap<>();
+            positionData.put("candidates", candidates);
+            positionData.put("results", pollResults);
+            positionData.put("userVote", userVoteData);
+            result.put(position, positionData);
+        }
+
+        return result;
+    }
+
     private Integer scopedConstituencyId(String position, Integer constituencyId) {
         if (position == null) {
             return constituencyId;

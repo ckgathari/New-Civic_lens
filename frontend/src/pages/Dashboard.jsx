@@ -59,9 +59,7 @@ const Dashboard = () => {
       results: resultsResp?.data || [],
       userVote: userVoteResp?.data || { hasVoted: false }
     };
-  };
-
-  const handleVoteForPosition = async (position, candidate) => {
+  };  const handleVoteForPosition = async (position, candidate) => {
     if (!currentUser) {
       alert("Please log in to vote.");
       return;
@@ -182,18 +180,21 @@ const Dashboard = () => {
 
         const pollData = {};
         const voteState = {};
-        await Promise.all(
-          positionOrder.map(async (position) => {
-            const data = await fetchPositionPollData(
-              position,
-              Number(countyId),
-              constituencyId ? Number(constituencyId) : undefined,
-              wardId ? Number(wardId) : undefined
-            );
-            pollData[position] = data;
-            voteState[position] = data.userVote?.candidateId || null;
-          })
+        const dashResp = await pollsAPI.getDashboard(
+          Number(countyId),
+          constituencyId ? Number(constituencyId) : undefined,
+          wardId ? Number(wardId) : undefined
         );
+        const dashboardPolls = dashResp?.data || {};
+        positionOrder.forEach((position) => {
+          const posData = dashboardPolls[position] || {};
+          pollData[position] = {
+            candidates: posData.candidates || [],
+            results: posData.results || [],
+            userVote: posData.userVote || { hasVoted: false },
+          };
+          voteState[position] = posData.userVote?.candidateId || null;
+        });
         setPositionPolls(pollData);
         setUserVotes(voteState);
       } catch (error) {
