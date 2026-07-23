@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import LocationSelector from '../components/LocationSelector';
 import { authAPI } from '../api/apiClient';
+import AuthPageShell from '../components/AuthPageShell';
 
 const SignUp = () => {
   const [step, setStep] = useState(1);
@@ -63,9 +64,8 @@ const SignUp = () => {
     'w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-100';
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-100 px-4 py-10">
-      <div className="w-full max-w-sm rounded-2xl bg-white p-8 shadow-md">
-        {step === 1 ? (
+    <AuthPageShell>
+      {step === 1 ? (
           <form onSubmit={handleStep1Submit} className="space-y-4">
             <h2 className="mb-2 text-center text-2xl font-bold text-slate-900">Create Account</h2>
             <p className="mb-4 text-center text-sm text-slate-500">Step 1 of 2 — Your details</p>
@@ -144,8 +144,7 @@ const SignUp = () => {
             )}
           </div>
         )}
-      </div>
-    </div>
+    </AuthPageShell>
   );
 };
 
