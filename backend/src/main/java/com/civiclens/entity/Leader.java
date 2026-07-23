@@ -37,15 +37,15 @@ public class Leader {
     @Column(columnDefinition = "TEXT")
     private String manifesto;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "county_id")
     private County county;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "constituency_id")
     private Constituency constituency;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ward_id")
     private Ward ward;
 

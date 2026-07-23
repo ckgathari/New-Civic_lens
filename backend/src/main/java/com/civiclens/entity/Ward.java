@@ -20,7 +20,7 @@ public class Ward {
     @Column(nullable = false)
     private String name;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "constituency_id", nullable = false)
     private Constituency constituency;
 }

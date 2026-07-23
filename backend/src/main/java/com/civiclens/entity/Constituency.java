@@ -20,7 +20,7 @@ public class Constituency {
     @Column(nullable = false)
     private String name;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "county_id", nullable = false)
     private County county;
 }

@@ -199,7 +199,7 @@ public class AuthController {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                         .body(Map.of("error", "Invalid token"));
             }
-            Optional<User> userOpt = userRepository.findById(userId);
+            Optional<User> userOpt = userRepository.findByIdWithLocation(userId);
 
             if (userOpt.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)

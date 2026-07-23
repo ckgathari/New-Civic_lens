@@ -40,15 +40,15 @@ public class Aspirant {
     @Column(name = "profile_picture")
     private String profilePicture;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "county_id", nullable = false)
     private County county;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "constituency_id")
     private Constituency constituency;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ward_id")
     private Ward ward;
 
