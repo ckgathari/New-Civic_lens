@@ -436,8 +436,8 @@ const CommentItem = ({ comment, level = 0, onReply, themeStyles }) => {
 
 const styles = {
   container: {
-    padding: '16px',
-    maxWidth: '600px',
+    padding: '12px 16px',
+    maxWidth: '640px',
     margin: 'auto',
     fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
     minHeight: '100vh',
@@ -579,8 +579,9 @@ const styles = {
     color: '#94a3b8',
   },
   commentTextSection: {
-    marginLeft: '60px',
+    marginLeft: '0',
     marginBottom: '12px',
+    paddingLeft: '60px',
   },
   commentText: {
     margin: '0',
@@ -592,7 +593,7 @@ const styles = {
   actions: {
     display: 'flex',
     gap: '16px',
-    marginLeft: '60px',
+    paddingLeft: '60px',
     marginTop: '10px',
     alignItems: 'center',
   },
@@ -673,13 +674,14 @@ const styles = {
   },
   resultBar: {
     position: 'relative',
-    height: '32px',
+    minHeight: '40px',
     backgroundColor: '#f1f5f9',
     borderRadius: '16px',
     overflow: 'hidden',
     display: 'flex',
     alignItems: 'center',
-    padding: '0 12px',
+    padding: '6px 12px',
+    flexWrap: 'wrap',
   },
   resultFill: {
     position: 'absolute',
@@ -692,12 +694,13 @@ const styles = {
   resultText: {
     position: 'relative',
     zIndex: 1,
-    fontSize: '14px',
+    fontSize: '13px',
     fontWeight: '600',
     color: '#0f172a',
-    whiteSpace: 'nowrap',
+    whiteSpace: 'normal',
     overflow: 'hidden',
-    textOverflow: 'ellipsis',
+    wordBreak: 'break-word',
+    lineHeight: '1.4',
   },
   votingSection: {
     borderTop: '1px solid rgba(148, 163, 184, 0.2)',
@@ -765,11 +768,12 @@ const styles = {
     borderRadius: '12px',
     border: '1px solid rgba(148, 163, 184, 0.6)',
     resize: 'vertical',
-    fontSize: '15px',
+    fontSize: '16px',
     outline: 'none',
     boxShadow: 'inset 0 2px 6px rgba(15, 23, 42, 0.05)',
     marginBottom: '12px',
     fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+    boxSizing: 'border-box',
   },
   formRow: {
     display: 'flex',

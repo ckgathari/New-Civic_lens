@@ -6,7 +6,6 @@ import LocationSelector from '../components/LocationSelector';
 const LocationSelectorPage = () => {
   const navigate = useNavigate();
 
-  // Handle the location submission
   const handleLocationSubmit = async (countyId, constituencyId, wardId) => {
     try {
       const { data: user } = await authAPI.getCurrentUser();
@@ -29,26 +28,14 @@ const LocationSelectorPage = () => {
   };
 
   return (
-    <div style={styles.container}>
-      <h2 style={styles.heading}>Select Your Location</h2>
-      <LocationSelector onSubmit={handleLocationSubmit} />
+    <div className="flex min-h-screen items-start justify-center bg-slate-100 px-4 py-10">
+      <div className="w-full max-w-sm rounded-2xl bg-white p-8 shadow-md">
+        <h2 className="mb-6 text-center text-2xl font-bold text-slate-900">Select Your Location</h2>
+        <LocationSelector onSubmit={handleLocationSubmit} />
+      </div>
     </div>
   );
 };
 
-const styles = {
-  container: {
-    maxWidth: '600px',
-    margin: '0 auto',
-    padding: '20px',
-    backgroundColor: '#f9f9f9',
-    borderRadius: '8px',
-    boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
-  },
-  heading: {
-    textAlign: 'center',
-    marginBottom: '20px'
-  }
-};
-
 export default LocationSelectorPage;
+
